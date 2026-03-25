@@ -1,7 +1,7 @@
 """
 OBESITY RISK PREDICTOR - ENTERPRISE EDITION
 Professional Health Risk Assessment Platform
-Version: 7.0.0 - With Explainable AI & Health Assistant
+Version: 8.0.0 - With Explainable AI & Health Assistant
 """
 
 import streamlit as st
@@ -15,6 +15,15 @@ from datetime import datetime
 import base64
 import os
 import warnings
+import sys
+
+# Fix for Python 3.10+ compatibility
+if sys.version_info >= (3, 10):
+    import collections
+    if not hasattr(collections, 'MutableMapping'):
+        import collections.abc
+        collections.MutableMapping = collections.abc.MutableMapping
+
 warnings.filterwarnings('ignore')
 
 # ============================================
@@ -354,12 +363,11 @@ def get_bmi_category(bmi):
     return 'Healthy Weight', 'Low', '✅'
 
 # ============================================
-# HARDCODED SHAP VISUALIZATION (ALWAYS WORKS)
+# HARDCODED SHAP VISUALIZATION
 # ============================================
 def create_shap_visualization(user_data):
-    """Create hardcoded SHAP-like visualization based on user inputs"""
+    """Create SHAP-like visualization based on user inputs"""
     
-    # Calculate impact scores based on user inputs
     impacts = {}
     
     # Physical Activity Impact
@@ -489,7 +497,6 @@ def create_shap_visualization(user_data):
     ax.set_title('How Each Factor Affects Your Health Risk', fontsize=14, fontweight='bold')
     ax.axvline(0, color='black', linewidth=0.5, linestyle='--')
     
-    # Add value labels
     for i, v in enumerate(shap_df['SHAP Value']):
         label = f'{v:+.3f}'
         x_pos = v + (0.02 if v > 0 else -0.08)
@@ -656,7 +663,7 @@ class RiskAnalyzer:
         return recommendations[:5]
 
 # ============================================
-# KNOWLEDGE GRAPH VISUALIZATION (WITH BLACK TEXT FOR BETTER VISIBILITY)
+# KNOWLEDGE GRAPH VISUALIZATION
 # ============================================
 class KnowledgeGraphVisualizer:
     @staticmethod
@@ -714,7 +721,7 @@ class KnowledgeGraphVisualizer:
             mode='markers+text',
             text=node_labels,
             textposition="middle center",
-            textfont=dict(size=11, color='black', family='Arial Black'),  # CHANGED TO BLACK TEXT
+            textfont=dict(size=11, color='black', family='Arial Black'),
             hoverinfo='text',
             hovertext=[f"<b>{n}</b><br>Category: {nodes[n]['group'].title()}" for n in nodes],
             marker=dict(size=node_sizes, color=node_colors, line=dict(width=2, color='white'), opacity=0.95)
@@ -861,36 +868,36 @@ def main():
         with st.expander("👤 Personal Information", expanded=True):
             col1, col2 = st.columns(2)
             with col1:
-                gender = st.selectbox("Gender", ["Male", "Female"])
+                gender = st.selectbox("Gender", ["Male", "Female"], key="sidebar_gender")
             with col2:
-                age = st.number_input("Age", 14, 100, 30)
+                age = st.number_input("Age", 14, 100, 30, key="sidebar_age")
             col1, col2 = st.columns(2)
             with col1:
-                height = st.number_input("Height (m)", 1.4, 2.2, 1.7, 0.01)
+                height = st.number_input("Height (m)", 1.4, 2.2, 1.7, 0.01, key="sidebar_height")
             with col2:
-                weight = st.number_input("Weight (kg)", 30, 200, 70)
-            family_history = st.selectbox("Family History of Obesity", ["no", "yes"])
+                weight = st.number_input("Weight (kg)", 30, 200, 70, key="sidebar_weight")
+            family_history = st.selectbox("Family History of Obesity", ["no", "yes"], key="sidebar_family")
         
         with st.expander("🥗 Dietary Patterns", expanded=True):
-            high_calorie = st.selectbox("High Calorie Food Consumption", ["no", "yes"])
-            vegetables = st.slider("Daily Vegetable Intake", 1.0, 3.0, 2.0, 0.1)
-            meals = st.selectbox("Meals Per Day", [3, 4, 5, 2, 1])
-            snacking = st.selectbox("Snacking Frequency", ["no", "Sometimes", "Frequently", "Always"])
+            high_calorie = st.selectbox("High Calorie Food Consumption", ["no", "yes"], key="sidebar_high_calorie")
+            vegetables = st.slider("Daily Vegetable Intake", 1.0, 3.0, 2.0, 0.1, key="sidebar_vegetables")
+            meals = st.selectbox("Meals Per Day", [3, 4, 5, 2, 1], key="sidebar_meals")
+            snacking = st.selectbox("Snacking Frequency", ["no", "Sometimes", "Frequently", "Always"], key="sidebar_snacking")
         
         with st.expander("💪 Lifestyle Factors", expanded=True):
-            activity = st.slider("Physical Activity Level", 0.0, 3.0, 1.0, 0.1)
-            screen_time = st.slider("Daily Screen Time", 0.0, 2.0, 1.0, 0.1)
-            water = st.slider("Water Intake", 1.0, 3.0, 2.0, 0.1)
+            activity = st.slider("Physical Activity Level", 0.0, 3.0, 1.0, 0.1, key="sidebar_activity")
+            screen_time = st.slider("Daily Screen Time", 0.0, 2.0, 1.0, 0.1, key="sidebar_screen")
+            water = st.slider("Water Intake", 1.0, 3.0, 2.0, 0.1, key="sidebar_water")
         
         with st.expander("🌙 Mental & Sleep Health", expanded=True):
-            stress = st.selectbox("Stress Level", ["Rarely", "Sometimes", "Often", "Very Often"])
-            sleep_quality = st.selectbox("Sleep Quality", ["Poor", "Fair", "Good", "Excellent"])
-            sleep_hours = st.slider("Sleep Duration (hours)", 4.0, 12.0, 7.0, 0.5)
+            stress = st.selectbox("Stress Level", ["Rarely", "Sometimes", "Often", "Very Often"], key="sidebar_stress")
+            sleep_quality = st.selectbox("Sleep Quality", ["Poor", "Fair", "Good", "Excellent"], key="sidebar_sleep_quality")
+            sleep_hours = st.slider("Sleep Duration (hours)", 4.0, 12.0, 7.0, 0.5, key="sidebar_sleep")
         
         with st.expander("🚫 Substance Use", expanded=True):
-            smoking = st.selectbox("Smoking", ["no", "yes"])
-            alcohol = st.selectbox("Alcohol Consumption", ["no", "Sometimes", "Frequently", "Always"])
-            calorie_tracking = st.selectbox("Calorie Tracking", ["no", "yes"])
+            smoking = st.selectbox("Smoking", ["no", "yes"], key="sidebar_smoking")
+            alcohol = st.selectbox("Alcohol Consumption", ["no", "Sometimes", "Frequently", "Always"], key="sidebar_alcohol")
+            calorie_tracking = st.selectbox("Calorie Tracking", ["no", "yes"], key="sidebar_calorie")
         
         st.markdown("---")
         analyze_button = st.button("🔍 Generate Comprehensive Analysis", use_container_width=True, type="primary")
@@ -927,7 +934,6 @@ def main():
             else:
                 ml_prediction = bmi_category
             
-            # Create HARDCODED SHAP visualization (ALWAYS WORKS)
             shap_fig, shap_df = create_shap_visualization(user_data)
             
             risk_factors, protective_factors = risk_analyzer.analyze_risk_factors(user_data)
@@ -1080,14 +1086,18 @@ def main():
             with st.expander("⚙️ Modify Lifestyle Factors", expanded=True):
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    sim_activity = st.slider("Physical Activity Level", 0.0, 3.0, user_data['Physical Activity'], 0.1)
-                    sim_sleep = st.slider("Sleep Duration (hours)", 4.0, 12.0, user_data['Sleep Hours'], 0.5)
+                    sim_activity = st.slider("Physical Activity Level", 0.0, 3.0, user_data['Physical Activity'], 0.1, key="sim_activity_whatif")
+                    sim_sleep = st.slider("Sleep Duration (hours)", 4.0, 12.0, user_data['Sleep Hours'], 0.5, key="sim_sleep_whatif")
                 with col2:
-                    sim_vegetables = st.slider("Vegetable Intake", 1.0, 3.0, user_data['Vegetable Intake'], 0.1)
-                    sim_water = st.slider("Water Intake", 1.0, 3.0, user_data['Water Intake'], 0.1)
+                    sim_vegetables = st.slider("Vegetable Intake", 1.0, 3.0, user_data['Vegetable Intake'], 0.1, key="sim_veg_whatif")
+                    sim_water = st.slider("Water Intake", 1.0, 3.0, user_data['Water Intake'], 0.1, key="sim_water_whatif")
                 with col3:
-                    sim_stress = st.selectbox("Stress Level", ["Rarely", "Sometimes", "Often", "Very Often"], index=["Rarely", "Sometimes", "Often", "Very Often"].index(user_data['Stress Level']))
-                    sim_calories = st.selectbox("High Calorie Food", ["no", "yes"], index=0 if user_data['High Calorie Food'] == 'no' else 1)
+                    sim_stress = st.selectbox("Stress Level", ["Rarely", "Sometimes", "Often", "Very Often"], 
+                                             index=["Rarely", "Sometimes", "Often", "Very Often"].index(user_data['Stress Level']),
+                                             key="sim_stress_whatif")
+                    sim_calories = st.selectbox("High Calorie Food", ["no", "yes"],
+                                               index=0 if user_data['High Calorie Food'] == 'no' else 1,
+                                               key="sim_calories_whatif")
             
             modifications = {'Physical Activity': sim_activity, 'Sleep Hours': sim_sleep, 'Vegetable Intake': sim_vegetables, 'Water Intake': sim_water, 'Stress Level': sim_stress, 'High Calorie Food': sim_calories}
             sim_result = simulator.simulate_changes(user_data, modifications)
@@ -1124,7 +1134,7 @@ def main():
         
         with tab4:
             st.markdown("### 👤 Health Twin")
-            years = st.slider("Projection Timeline (Years)", 1, 20, 10)
+            years = st.slider("Projection Timeline (Years)", 1, 20, 10, key="twin_years")
             projections = digital_twin.project_trajectory(user_data, years)
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=[p['age'] for p in projections], y=[p['bmi'] for p in projections], mode='lines+markers', name='BMI Trajectory', line=dict(color='#667eea', width=3), marker=dict(size=8, color=[0 if p['risk'] == 'Low' else 1 if p['risk'] == 'Moderate' else 2 for p in projections], colorscale=['#10b981', '#f59e0b', '#ef4444'])))
@@ -1160,7 +1170,7 @@ def main():
             for i, (question, _) in enumerate(questions):
                 cols = [col1, col2, col3, col4]
                 with cols[i]:
-                    if st.button(question, use_container_width=True):
+                    if st.button(question, use_container_width=True, key=f"quick_q_{i}"):
                         context = {'bmi': st.session_state.bmi, 'bmi_category': st.session_state.bmi_category}
                         st.session_state.chatbot.generate_response(question, context)
                         st.rerun()
@@ -1177,8 +1187,6 @@ def main():
             <p style='color:#6c757d;'>Complete your health profile to receive personalized insights</p>
         </div>
         """, unsafe_allow_html=True)
-        #fig = kg_viz.create_risk_factor_network()
-       # st.plotly_chart(fig, use_container_width=True)
     
     st.markdown("""
     <div class='footer'>
