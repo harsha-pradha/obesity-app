@@ -1152,18 +1152,16 @@ def main():
         
         with tab6:
             st.markdown("### 💬 AI Health Assistant")
+            st.markdown("Ask questions about your health, BMI, nutrition, exercise, and more")
+            
+            # Display chat history
             for role, msg in st.session_state.chatbot.conversation_history[-10:]:
                 if role == "user":
                     st.markdown(f"<div class='chat-message user-message'><strong>You</strong><br>{msg}</div>", unsafe_allow_html=True)
                 else:
                     st.markdown(f"<div class='chat-message bot-message'><strong>AI Assistant</strong><br>{msg}</div>", unsafe_allow_html=True)
             
-            user_query = st.chat_input("Ask me anything about health, nutrition, or obesity...")
-            if user_query:
-                context = {'bmi': st.session_state.bmi, 'bmi_category': st.session_state.bmi_category}
-                st.session_state.chatbot.generate_response(user_query, context)
-                st.rerun()
-            
+            # Quick questions buttons
             st.markdown("#### 📝 Quick Questions")
             col1, col2, col3, col4 = st.columns(4)
             questions = [("What is a healthy BMI?", "bmi"), ("How can I lose weight?", "weight loss"), ("Best exercises?", "exercise"), ("Why is sleep important?", "sleep")]
@@ -1175,9 +1173,16 @@ def main():
                         st.session_state.chatbot.generate_response(question, context)
                         st.rerun()
             
-            if st.button("🗑️ Clear Chat History", use_container_width=True):
+            if st.button("🗑️ Clear Chat History", use_container_width=True, key="clear_chat"):
                 st.session_state.chatbot = RAGHealthChatbot(KNOWLEDGE_BASE)
                 st.rerun()
+        
+        # CHAT INPUT MUST BE OUTSIDE THE TAB - at root level after tabs
+        user_query = st.chat_input("Ask me anything about health, nutrition, or obesity...")
+        if user_query:
+            context = {'bmi': st.session_state.bmi, 'bmi_category': st.session_state.bmi_category}
+            st.session_state.chatbot.generate_response(user_query, context)
+            st.rerun()
     
     else:
         st.markdown("""
