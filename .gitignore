@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.vscode/
+.streamlit/
+deployment/
+!deployment/xgboost_pipeline.pkl
