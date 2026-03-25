@@ -1,7 +1,7 @@
 """
 OBESITY RISK PREDICTOR - ENTERPRISE EDITION
 Professional Health Risk Assessment Platform
-Version: 8.0.0 - With Explainable AI & Health Assistant
+Version: 8.0.0 - With Explainable AI
 """
 
 import streamlit as st
@@ -150,25 +150,6 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     
-    .chat-message {
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        animation: fadeInUp 0.3s ease-out;
-    }
-    
-    .user-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        margin-left: 20%;
-    }
-    
-    .bot-message {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        margin-right: 20%;
-    }
-    
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
         background-color: white;
@@ -200,78 +181,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-# ============================================
-# KNOWLEDGE BASE FOR RAG CHATBOT
-# ============================================
-KNOWLEDGE_BASE = {
-    'obesity': {
-        'definition': 'Obesity is a complex medical condition with excessive body fat that increases health risks.',
-        'causes': 'Causes include: genetic factors, poor diet, sedentary lifestyle, inadequate sleep, chronic stress, and hormonal imbalances.',
-        'prevention': 'Prevention strategies: balanced nutrition, regular exercise (150+ mins/week), adequate sleep (7-9 hours), stress management.',
-        'treatment': 'Treatment: lifestyle modifications, behavioral therapy, nutritional counseling, increased physical activity, and medical intervention.'
-    },
-    'bmi': {
-        'definition': 'BMI = weight (kg) / height² (m²). A screening tool for weight categories.',
-        'categories': 'Underweight: <18.5 | Healthy: 18.5-24.9 | Overweight: 25-29.9 | Obese Class I: 30-34.9 | Obese Class II: 35-39.9 | Obese Class III: ≥40',
-        'interpretation': 'BMI is a screening tool. Consider waist circumference, body composition, and overall health for complete assessment.'
-    },
-    'diet': {
-        'healthy': 'Focus on whole grains, lean proteins, fruits, vegetables, healthy fats. Limit processed foods and added sugars.',
-        'recommendations': 'Eat 5+ servings of vegetables daily, choose lean proteins, stay hydrated, practice portion control, avoid late-night eating.'
-    },
-    'exercise': {
-        'recommendations': 'Adults need 150-300 minutes moderate or 75-150 minutes vigorous activity weekly, plus strength training 2+ days/week.',
-        'benefits': 'Exercise improves cardiovascular health, metabolism, mental health, sleep quality, and weight management.'
-    },
-    'sleep': {
-        'recommendations': 'Adults need 7-9 hours of quality sleep. Maintain consistent schedule, dark cool room, no screens before bed.',
-        'weight_connection': 'Poor sleep disrupts hunger hormones (increases ghrelin, decreases leptin), leading to increased appetite and weight gain.'
-    },
-    'stress': {
-        'effects': 'Chronic stress elevates cortisol, promoting abdominal fat storage and increasing cravings for high-calorie foods.',
-        'management': 'Practice mindfulness, deep breathing, regular exercise, adequate sleep, and maintain social connections.'
-    }
-}
-
-# ============================================
-# RAG CHATBOT CLASS
-# ============================================
-class RAGHealthChatbot:
-    def __init__(self, knowledge_base):
-        self.kb = knowledge_base
-        self.conversation_history = []
-    
-    def generate_response(self, query, user_context=None):
-        query_lower = query.lower()
-        response = ""
-        
-        if any(word in query_lower for word in ['bmi', 'body mass index']):
-            response = "**Understanding BMI:**\n\n" + self.kb['bmi']['definition'] + "\n\n" + self.kb['bmi']['categories'] + "\n\n" + self.kb['bmi']['interpretation']
-            if user_context and user_context.get('bmi'):
-                response += f"\n\n**Your BMI:** {user_context['bmi']:.1f} ({user_context.get('bmi_category', 'Unknown')})"
-        
-        elif any(word in query_lower for word in ['diet', 'food', 'eat', 'nutrition']):
-            response = "**Nutrition Guidance:**\n\n" + self.kb['diet']['healthy'] + "\n\n" + self.kb['diet']['recommendations']
-        
-        elif any(word in query_lower for word in ['exercise', 'workout', 'activity', 'physical']):
-            response = "**Exercise Recommendations:**\n\n" + self.kb['exercise']['recommendations'] + "\n\n" + self.kb['exercise']['benefits']
-        
-        elif any(word in query_lower for word in ['sleep', 'rest']):
-            response = "**Sleep Health:**\n\n" + self.kb['sleep']['recommendations'] + "\n\n" + self.kb['sleep']['weight_connection']
-        
-        elif any(word in query_lower for word in ['stress', 'anxiety']):
-            response = "**Stress Management:**\n\n" + self.kb['stress']['effects'] + "\n\n" + self.kb['stress']['management']
-        
-        elif any(word in query_lower for word in ['obesity', 'overweight', 'weight loss']):
-            response = "**About Obesity:**\n\n" + self.kb['obesity']['definition'] + "\n\n" + self.kb['obesity']['causes'] + "\n\n" + self.kb['obesity']['prevention']
-        
-        else:
-            response = "**I can help with questions about:**\n\n• BMI and weight categories\n• Healthy eating and nutrition\n• Exercise recommendations\n• Sleep optimization\n• Stress management\n• Obesity prevention\n\nWhat would you like to know?"
-        
-        self.conversation_history.append(("user", query))
-        self.conversation_history.append(("assistant", response))
-        return response
 
 # ============================================
 # CONSTANTS
@@ -855,9 +764,6 @@ def main():
     simulator = WhatIfSimulator()
     digital_twin = DigitalTwin()
     
-    if 'chatbot' not in st.session_state:
-        st.session_state.chatbot = RAGHealthChatbot(KNOWLEDGE_BASE)
-    
     model = load_ml_model()
     ui.render_header()
     
@@ -904,8 +810,7 @@ def main():
         
         if st.button("🔄 Reset All Data", use_container_width=True):
             for key in list(st.session_state.keys()):
-                if key not in ['chatbot']:
-                    del st.session_state[key]
+                del st.session_state[key]
             st.rerun()
     
     user_data = {
@@ -948,9 +853,9 @@ def main():
             })
     
     if st.session_state.get('analysis_complete', False):
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
             "📊 Health Dashboard", "🤖 Explainable AI", "🔄 What-If Analysis",
-            "👤 Health Twin", "🧬 Risk Factor Network", "💬 Health Assistant"
+            "👤 Health Twin", "🧬 Risk Factor Network"
         ])
         
         with tab1:
@@ -1149,40 +1054,6 @@ def main():
             st.markdown("### 🧬 Risk Factor Network")
             fig = kg_viz.create_risk_factor_network()
             st.plotly_chart(fig, use_container_width=True)
-        
-        with tab6:
-            st.markdown("### 💬 AI Health Assistant")
-            st.markdown("Ask questions about your health, BMI, nutrition, exercise, and more")
-            
-            # Display chat history
-            for role, msg in st.session_state.chatbot.conversation_history[-10:]:
-                if role == "user":
-                    st.markdown(f"<div class='chat-message user-message'><strong>You</strong><br>{msg}</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<div class='chat-message bot-message'><strong>AI Assistant</strong><br>{msg}</div>", unsafe_allow_html=True)
-            
-            # Quick questions buttons
-            st.markdown("#### 📝 Quick Questions")
-            col1, col2, col3, col4 = st.columns(4)
-            questions = [("What is a healthy BMI?", "bmi"), ("How can I lose weight?", "weight loss"), ("Best exercises?", "exercise"), ("Why is sleep important?", "sleep")]
-            for i, (question, _) in enumerate(questions):
-                cols = [col1, col2, col3, col4]
-                with cols[i]:
-                    if st.button(question, use_container_width=True, key=f"quick_q_{i}"):
-                        context = {'bmi': st.session_state.bmi, 'bmi_category': st.session_state.bmi_category}
-                        st.session_state.chatbot.generate_response(question, context)
-                        st.rerun()
-            
-            if st.button("🗑️ Clear Chat History", use_container_width=True, key="clear_chat"):
-                st.session_state.chatbot = RAGHealthChatbot(KNOWLEDGE_BASE)
-                st.rerun()
-        
-        # CHAT INPUT MUST BE OUTSIDE THE TAB - at root level after tabs
-        user_query = st.chat_input("Ask me anything about health, nutrition, or obesity...")
-        if user_query:
-            context = {'bmi': st.session_state.bmi, 'bmi_category': st.session_state.bmi_category}
-            st.session_state.chatbot.generate_response(user_query, context)
-            st.rerun()
     
     else:
         st.markdown("""
